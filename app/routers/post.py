@@ -1,24 +1,26 @@
 from fastapi import FastAPI, Depends, status, HTTPException, Response, APIRouter
 from .. database import  get_db
 from typing import List 
+from sqlalchemy import func
 from sqlalchemy.orm import Session
 from .. import models, schemas, utils, oauth2
 
 
 router = APIRouter(prefix='/posts', tags=['posts'])
 
-@router.get('/', response_model = List[schemas.Post])
-def get_post(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), limit: int=10):
+@router.get('/', response_model = List[schemas.PostOut])
+def get_post(db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user), offset: int =0, limit: int=10):
 
-    posts = db.query(models.Post).limit(limit).all()
+    posts = db.query(models.Post, func.count(models.Vote.post_id).label('vote')).join(models.Vote, models.Vote.post_id==models.Post.id, isouter=True).group_by(models.Post.id).limit(limit).offset(offset).all()
+    # .limit(limit).all()
 
     return  posts
 
 
 
-@router.get('/{id}', response_model=schemas.Post)
+@router.get('/{id}', response_model=schemas.PostOut)
 def get_single_post(id:int , db: Session = Depends(get_db), current_user: int = Depends(oauth2.get_current_user)):
-    query_post = db.query(models.Post).filter(models.Post.id==id).first()
+    query_post = db.query(models.Post, func.count(models.Vote.post_id).label('vote')).join(models.Vote,  models.Vote.post_id==models.Post.id, isouter=True).group_by(models.Post.id).filter(models.Post.id == id).first()
     if not query_post:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"{id} not found")
 

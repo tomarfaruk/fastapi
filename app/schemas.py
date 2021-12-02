@@ -2,6 +2,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import datetime
+from pydantic.types import conint
 
 
 class PostBase(BaseModel):
@@ -31,6 +32,14 @@ class Post(PostBase):
     class Config:
         orm_mode= True
 
+class PostOut(BaseModel):
+    Post : Post
+    vote: int 
+
+    class Config:
+        orm_mdoe = True 
+
+
 class UserBase(BaseModel):
     email: EmailStr
     password: str
@@ -49,3 +58,8 @@ class Token(BaseModel):
     
 class TokenData(BaseModel):
     id: Optional[str] = None
+
+
+class Vote(BaseModel):
+    post_id: str 
+    dir: conint(le=1)
