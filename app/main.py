@@ -9,11 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI()
 
 origins = [
-    "https://www.youtube.com",
-    "https://www.google.com",
-    "http://localhost",
-    "http://localhost:8080",
-]
+    "https://tomar-fastapi.herokuapp.com",
+    "http://tomar-fastapi.herokuapp.com",
+    ]
 
 app.add_middleware(
     CORSMiddleware,
